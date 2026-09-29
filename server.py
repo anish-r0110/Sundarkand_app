@@ -490,7 +490,8 @@ class AppRequestHandler(BaseHTTPRequestHandler):
             for k, v in headers.items():
                 self.send_header(k, v)
         self.end_headers()
-        self.wfile.write(payload)
+        if getattr(self, 'command', 'GET') != 'HEAD':
+            self.wfile.write(payload)
 
     def send_error_json(self, message, status=400):
         self.send_json({"error": message}, status=status)
@@ -509,6 +510,20 @@ class AppRequestHandler(BaseHTTPRequestHandler):
         return ("Set-Cookie", f"session_token=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax{secure_flag}")
 
     # ROUTING
+    def do_HEAD(self):
+        # Support HEAD requests (used by Render health probes and uptime checkers)
+        return self.do_GET()
+
+    def do_OPTIONS(self):
+        # Support CORS preflight and HTTP capability probes
+        self.send_response(204)
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type, Cookie, Authorization, X-Requested-With")
+        self.send_header("Access-Control-Max-Age", "86400")
+        self.send_header("Content-Length", "0")
+        self.end_headers()
+
     def do_GET(self):
         parsed = urlparse(self.path)
         path = parsed.path
@@ -1398,16 +1413,20 @@ class AppRequestHandler(BaseHTTPRequestHandler):
             else:
                 self.send_header("Cache-Control", "public, max-age=3600")
             self.end_headers()
-            self.wfile.write(content)
+            if getattr(self, 'command', 'GET') != 'HEAD':
+                self.wfile.write(content)
         except Exception as e:
             self.send_error(500, f"Error reading file: {e}")
 
     def log_message(self, format, *args):
-        # Concise logging
         # Suppress chat stream polling from filling stdout
         if len(args) > 0 and "/api/chat/stream" in str(args[0]):
             return
-        sys.stderr.write(f"[{datetime.now().strftime('%H:%M:%S')}] {args[0]} {args[1]} -> {args[2]}\n")
+        try:
+            msg = format % args
+        except Exception:
+            msg = " ".join(str(a) for a in args)
+        sys.stderr.write(f"[{datetime.now().strftime('%H:%M:%S')}] {msg}\n")
 
 class QuietThreadingHTTPServer(ThreadingHTTPServer):
     def handle_error(self, request, client_address):
