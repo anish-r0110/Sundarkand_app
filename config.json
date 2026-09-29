@@ -1,0 +1,10 @@
+{
+  "port": 8000,
+  "admin_email": "admin@sundarkand.org",
+  "session_secret": "d9956818720eb12a361225fa17268756a58a615d184ee5b8f2a2c30451794be0",
+  "vapid": {
+    "public_key": "BKu3S3whQ-HNtry8X4p67h5F_YlSW9769bexb2aMlCWp4zFpaje4h0roBgA1EeJ-FA3bPhSsO4_NSe2e5OLzemw",
+    "private_key": "-----BEGIN PRIVATE KEY-----\nMIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgYK3/fZy8PmyDAf9J\nF1jRtXVN2S5BOvClUWNJkAToMvWhRANCAASrt0t8IUPhzba8vF+Keu4eRf2JUlve\n+vW3sW9mjJQlqeMxaWo3uIdK6AYANRHifhQN2z4UrDuPzUntnuTi83ps\n-----END PRIVATE KEY-----\n",
+    "claim_email": "admin@sundarkand.org"
+  }
+}

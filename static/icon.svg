@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#EA580C"/>
+      <stop offset="50%" stop-color="#D97706"/>
+      <stop offset="100%" stop-color="#B45309"/>
+    </linearGradient>
+    <radialGradient id="flameGlow" cx="50%" cy="45%" r="50%">
+      <stop offset="0%" stop-color="#FEF08A" stop-opacity="0.9"/>
+      <stop offset="40%" stop-color="#F59E0B" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#D97706" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="flameGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#EA580C"/>
+      <stop offset="60%" stop-color="#F59E0B"/>
+      <stop offset="100%" stop-color="#FEF08A"/>
+    </linearGradient>
+    <linearGradient id="brassGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#9A3412"/>
+      <stop offset="50%" stop-color="#B45309"/>
+      <stop offset="100%" stop-color="#78350F"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="512" height="512" rx="110" fill="url(#bgGrad)"/>
+  <circle cx="256" cy="256" r="215" fill="none" stroke="#FDE68A" stroke-width="4" stroke-opacity="0.4" stroke-dasharray="8 6"/>
+
+  <!-- Flame aura glow -->
+  <circle cx="256" cy="195" r="110" fill="url(#flameGlow)"/>
+
+  <!-- Outer Flame -->
+  <path d="M 256,90 C 290,165 315,225 256,265 C 197,225 222,165 256,90 Z" fill="url(#flameGrad)"/>
+  
+  <!-- Inner Flame Core -->
+  <path d="M 256,135 C 275,185 290,225 256,252 C 222,225 237,185 256,135 Z" fill="#FFFFFF" fill-opacity="0.9"/>
+
+  <!-- Diya Lamp Vessel -->
+  <!-- Base Pedestal -->
+  <path d="M 200,380 L 312,380 L 332,415 L 180,415 Z" fill="#78350F"/>
+  <ellipse cx="256" cy="415" rx="76" ry="12" fill="#9A3412"/>
+
+  <!-- Bowl -->
+  <path d="M 125,275 C 130,370 382,370 387,275 Z" fill="url(#brassGrad)" stroke="#FDE68A" stroke-width="4"/>
+  <ellipse cx="256" cy="275" rx="131" ry="24" fill="#9A3412" stroke="#FDE68A" stroke-width="3"/>
+  <ellipse cx="256" cy="275" rx="115" ry="18" fill="#78350F"/>
+</svg>

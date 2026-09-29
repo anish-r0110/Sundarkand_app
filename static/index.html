@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#D97706">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Sundarkand">
+  <meta name="description" content="Private portal for Sundarkand Ramayan musical recitals & seva group">
+  <title>Sundarkand Seva Team</title>
+
+  <link rel="manifest" href="/static/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="/static/icon-192.png">
+  <link rel="icon" type="image/svg+xml" href="/static/icon.svg">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container"></div>
+
+  <!-- AUTH VIEW (Login / Register for Invited Users) -->
+  <div id="auth-view" class="auth-page" style="display: none;">
+    <div class="auth-card">
+      <div class="auth-diya">
+        <img src="/static/icon.svg" alt="Sundarkand Diya" width="68" height="68">
+      </div>
+      <h1>सुन्दरकाण्ड सेवा</h1>
+      <p class="auth-tagline">Sundarkand Seva Team · Private Group</p>
+
+      <!-- Step 1: Email Form -->
+      <form id="auth-email-form">
+        <div class="form-group">
+          <label class="form-label" for="auth-email">Invited Email Address</label>
+          <input type="email" id="auth-email" class="form-input" placeholder="name@example.com" required autocomplete="email" inputmode="email">
+        </div>
+        <button type="submit" id="btn-check-email" class="btn btn-primary btn-block">
+          <span>Continue</span>
+        </button>
+      </form>
+
+      <!-- Step 2A: Login Form (for registered users) -->
+      <form id="auth-login-form" style="display: none;">
+        <div class="form-group">
+          <label class="form-label" for="login-password">Enter Password</label>
+          <input type="password" id="login-password" class="form-input" placeholder="••••••••" required autocomplete="current-password">
+        </div>
+        <button type="submit" id="btn-login-submit" class="btn btn-primary btn-block">
+          <span>Sign In</span>
+        </button>
+        <button type="button" id="btn-back-to-email" class="btn btn-secondary btn-block btn-sm" style="margin-top: 10px;">
+          Use different email
+        </button>
+      </form>
+
+      <!-- Step 2B: Register Form (for newly invited members setting password) -->
+      <form id="auth-register-form" style="display: none;">
+        <div style="background: var(--primary-light); padding: 10px; border-radius: var(--radius-sm); margin-bottom: 12px; font-size: 0.82rem; color: var(--primary-dark); font-weight: 600;">
+          ✨ Welcome! Set your name & password to activate your account.
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="reg-display-name">Your Full / Devotional Name</label>
+          <input type="text" id="reg-display-name" class="form-input" placeholder="e.g. Ramesh Sharma" required autocomplete="name">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="reg-password">Create Password (min 6 chars)</label>
+          <input type="password" id="reg-password" class="form-input" placeholder="••••••••" minlength="6" required autocomplete="new-password">
+        </div>
+        <button type="submit" id="btn-register-submit" class="btn btn-maroon btn-block">
+          <span>Activate Account</span>
+        </button>
+        <button type="button" id="btn-back-to-email-2" class="btn btn-secondary btn-block btn-sm" style="margin-top: 10px;">
+          Use different email
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MAIN APP CONTAINER -->
+  <div id="app-container" style="display: none;">
+
+    <!-- Top App Header -->
+    <header class="app-header">
+      <div class="brand-wrapper">
+        <div class="brand-icon">🪔</div>
+        <div>
+          <div class="brand-title">Sundarkand Seva</div>
+          <div class="brand-subtitle">सुन्दरकाण्ड सेवा टीम</div>
+        </div>
+      </div>
+      <div class="header-right-actions">
+        <button id="btn-sticky-refresh" class="btn-refresh-header" title="Refresh Live Updates">
+          <span class="refresh-spinner-icon">🔄</span>
+          <span class="refresh-text">Live Sync</span>
+        </button>
+        <div id="header-user-badge">
+          <span id="user-role-badge" class="role-badge member">Sevak</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Install App Banner (Prompt) -->
+    <div id="install-banner" class="install-banner" style="display: none;">
+      <div class="install-banner-text">
+        <h4>📲 Install Mobile App</h4>
+        <p>Install for faster access and offline seva reminders.</p>
+      </div>
+      <div style="display: flex; align-items: center; gap: 4px;">
+        <button id="btn-install-banner" class="install-btn-small">Install</button>
+        <button id="btn-dismiss-install" class="install-close-btn" title="Dismiss">✕</button>
+      </div>
+    </div>
+
+    <!-- TAB 1: EVENTS -->
+    <main id="tab-events" class="tab-content active">
+      <div class="section-header">
+        <h2>Seva Events</h2>
+        <button id="btn-new-event" class="btn btn-primary btn-sm" style="display: none;">
+          <span>➕ New Seva</span>
+        </button>
+      </div>
+
+      <!-- Upcoming Events List -->
+      <div id="events-upcoming-container">
+        <div class="spinner"></div>
+      </div>
+
+      <!-- Past Events Accordion -->
+      <div id="past-events-section" style="display: none;">
+        <button id="btn-toggle-past-events" class="past-events-toggle">
+          <span>📜 Completed Past Events (<span id="past-events-count">0</span>)</span>
+          <span id="past-accordion-icon">▼</span>
+        </button>
+        <div id="events-past-container" class="past-events-container"></div>
+      </div>
+    </main>
+
+    <!-- TAB 2: ATTENDANCE -->
+    <main id="tab-attendance" class="tab-content">
+      <div class="section-header">
+        <h2>Attendance</h2>
+      </div>
+
+      <!-- Event Selector -->
+      <div class="form-group">
+        <label class="form-label" for="attendance-event-select">Select Seva Event</label>
+        <select id="attendance-event-select" class="form-select"></select>
+      </div>
+
+      <div id="attendance-content">
+        <div class="spinner"></div>
+      </div>
+    </main>
+
+    <!-- TAB 3: CHAT -->
+    <main id="tab-chat" class="tab-content">
+      <div class="chat-container">
+        <div id="chat-history" class="chat-history">
+          <div id="chat-load-more" class="chat-load-more" style="display: none;">
+            <button id="btn-load-older-chat" class="chat-load-more-btn">Load earlier messages</button>
+          </div>
+          <div id="chat-messages-list">
+            <div class="spinner"></div>
+          </div>
+        </div>
+
+        <!-- Sticky Chat Input Bar -->
+        <form id="chat-form" class="chat-input-bar">
+          <input type="text" id="chat-input-text" class="chat-input" placeholder="Jai Siya Ram! Write message..." autocomplete="off">
+          <button type="submit" class="chat-send-btn" title="Send Message">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+            </svg>
+          </button>
+        </form>
+      </div>
+    </main>
+
+    <!-- TAB 4: PROFILE & SETTINGS -->
+    <main id="tab-profile" class="tab-content">
+      <!-- Profile Info Card -->
+      <div class="card profile-card">
+        <div id="profile-avatar" class="profile-avatar-large">S</div>
+        <h2 id="profile-name-heading" style="margin-bottom: 2px;">Sevak</h2>
+        <p id="profile-email-text" style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 12px;">user@example.com</p>
+
+        <!-- Inline Edit Name Form -->
+        <form id="edit-name-form" style="display: flex; gap: 8px; justify-content: center; max-width: 320px; margin: 0 auto;">
+          <input type="text" id="profile-display-name-input" class="form-input" style="min-height: 40px; font-size: 0.88rem;" required>
+          <button type="submit" class="btn btn-secondary btn-sm" style="min-height: 40px;">Save</button>
+        </form>
+      </div>
+
+      <!-- Push Notification Settings -->
+      <h3 style="margin-bottom: 8px;">Notifications</h3>
+      <div class="settings-group">
+        <div class="setting-row">
+          <div class="setting-info">
+            <h4>Push Notifications</h4>
+            <p id="push-permission-status">Click to enable device push alerts</p>
+          </div>
+          <button id="btn-enable-push" class="btn btn-primary btn-sm">Enable</button>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <h4>New Seva Events</h4>
+            <p>Notify when an event is announced</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="pref-new-events" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <h4>Schedule Changes</h4>
+            <p>Notify if date, time or venue updates</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="pref-event-changes" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <h4>Seva Reminders</h4>
+            <p>Reminders 24 hours & 2 hours before</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="pref-reminders" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <h4>Group Chat Alerts</h4>
+            <p>Notify when a member posts in chat</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="pref-chat">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 18px;">
+        <button id="btn-test-notification" class="btn btn-secondary btn-block btn-sm">
+          🔔 Send Test Push Notification
+        </button>
+      </div>
+
+      <!-- App Installation Guide Card -->
+      <div class="card" style="cursor: pointer;" id="card-install-guide">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 1.4rem;">📲</span>
+            <div>
+              <div style="font-weight: 700; color: var(--accent-maroon);">PWA Installation Guide</div>
+              <div style="font-size: 0.78rem; color: var(--text-muted);">How to add this app to iPhone or Android</div>
+            </div>
+          </div>
+          <span style="color: var(--text-muted);">➔</span>
+        </div>
+      </div>
+
+      <!-- ADMIN CONTROLS SECTION (Only visible to admin) -->
+      <div id="admin-section" style="display: none; margin-top: 20px;">
+        <h3 style="margin-bottom: 10px; color: var(--accent-maroon);">Admin Team Management</h3>
+
+        <!-- Invite Member Card -->
+        <div class="card">
+          <h4 style="margin-bottom: 8px; font-size: 0.95rem;">Invite New Member</h4>
+          <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px;">
+            Only invited emails can register. Once invited, the user can set their password.
+          </p>
+          <form id="admin-invite-form" style="display: flex; gap: 8px;">
+            <input type="email" id="invite-email-input" class="form-input" placeholder="colleague@gmail.com" required style="min-height: 42px;">
+            <button type="submit" class="btn btn-maroon btn-sm" style="min-height: 42px; white-space: nowrap;">Invite</button>
+          </form>
+        </div>
+
+        <!-- Pending Invites List -->
+        <div class="card">
+          <h4 style="margin-bottom: 8px; font-size: 0.95rem;">Pending Invites</h4>
+          <div id="admin-pending-invites-list">
+            <p style="font-size: 0.82rem; color: var(--text-muted);">No pending invites.</p>
+          </div>
+        </div>
+
+        <!-- Team Members List (Role promote/demote) -->
+        <div class="card">
+          <h4 style="margin-bottom: 8px; font-size: 0.95rem;">Registered Members</h4>
+          <div id="admin-members-list">
+            <div class="spinner"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sign Out Button -->
+      <div style="margin-top: 24px; margin-bottom: 16px;">
+        <button id="btn-sign-out" class="btn btn-outline-maroon btn-block">
+          🚪 Sign Out
+        </button>
+      </div>
+    </main>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="bottom-nav">
+      <button class="nav-item active" data-tab="tab-events">
+        <span class="nav-icon">📅</span>
+        <span>Events</span>
+      </button>
+      <button class="nav-item" data-tab="tab-attendance">
+        <span class="nav-icon">👥</span>
+        <span>Attendance</span>
+      </button>
+      <button class="nav-item" data-tab="tab-chat">
+        <span class="nav-icon">💬</span>
+        <span>Chat</span>
+      </button>
+      <button class="nav-item" data-tab="tab-profile">
+        <span class="nav-icon">⚙️</span>
+        <span>Profile</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- MODAL: EVENT DETAILS & RSVP -->
+  <div id="modal-event-detail" class="modal-overlay">
+    <div class="modal-sheet">
+      <div class="modal-sheet-handle"></div>
+      <div class="modal-title-row">
+        <div>
+          <h2 id="modal-event-title" style="margin-bottom: 2px;">Sundarkand Path</h2>
+          <div id="modal-event-datetime" style="font-size: 0.88rem; color: var(--primary-dark); font-weight: 600;"></div>
+        </div>
+        <button class="close-modal-btn" onclick="window.App.closeModals()">✕</button>
+      </div>
+
+      <!-- Venue & Maps Link -->
+      <div class="card" style="background: var(--bg-card-alt); margin-bottom: 14px;">
+        <div style="font-weight: 700; margin-bottom: 4px; color: var(--text-dark);" id="modal-event-venue">Venue Name</div>
+        <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px;" id="modal-event-address">Full Address</div>
+        <a id="modal-event-maps-btn" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm" style="width: 100%;">
+          📍 Open in Google Maps
+        </a>
+      </div>
+
+      <!-- Notes / Seva Guidelines -->
+      <div id="modal-event-notes-box" style="margin-bottom: 16px; display: none;">
+        <div style="font-size: 0.82rem; font-weight: 700; text-transform: uppercase; color: var(--accent-maroon); margin-bottom: 4px;">Notes & Preparation</div>
+        <div id="modal-event-notes" style="font-size: 0.88rem; color: var(--text-dark); background: #FFF; padding: 10px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); white-space: pre-wrap;"></div>
+      </div>
+
+      <!-- Attendees Preview (Who is Going) -->
+      <div id="modal-event-attendees-box" style="margin-bottom: 16px; display: none;">
+        <div style="font-size: 0.82rem; font-weight: 700; text-transform: uppercase; color: var(--status-going); margin-bottom: 4px;">
+          🌸 Confirmed Sevaks (<span id="modal-event-going-count">0</span>)
+        </div>
+        <div id="modal-event-going-list" style="font-size: 0.86rem; color: var(--text-dark); background: var(--status-going-bg); padding: 8px 12px; border-radius: var(--radius-sm); border: 1px solid rgba(21, 128, 61, 0.2); line-height: 1.4;"></div>
+      </div>
+
+      <!-- RSVP Choice Grid -->
+      <div class="rsvp-section-title">Your RSVP Attendance</div>
+      <div class="rsvp-buttons-grid">
+        <button class="rsvp-choice-btn" data-status="going" id="rsvp-btn-going">
+          <span class="emoji">🌸</span>
+          <span>Going</span>
+        </button>
+        <button class="rsvp-choice-btn" data-status="maybe" id="rsvp-btn-maybe">
+          <span class="emoji">🙏</span>
+          <span>Maybe</span>
+        </button>
+        <button class="rsvp-choice-btn" data-status="not_going" id="rsvp-btn-not-going">
+          <span class="emoji">❌</span>
+          <span>Not Going</span>
+        </button>
+      </div>
+
+      <!-- Admin Actions for Event -->
+      <div id="modal-event-admin-actions" style="display: none; border-top: 1px solid var(--border-subtle); padding-top: 14px; margin-top: 14px;">
+        <div style="display: flex; gap: 8px;">
+          <button id="btn-edit-current-event" class="btn btn-secondary btn-sm" style="flex: 1;">✏️ Edit Event</button>
+          <button id="btn-delete-current-event" class="btn btn-outline-maroon btn-sm" style="flex: 1;">🗑️ Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CREATE / EDIT EVENT FORM -->
+  <div id="modal-event-form" class="modal-overlay">
+    <div class="modal-sheet">
+      <div class="modal-sheet-handle"></div>
+      <div class="modal-title-row">
+        <h2 id="modal-form-heading">Schedule New Seva</h2>
+        <button class="close-modal-btn" onclick="window.App.closeModals()">✕</button>
+      </div>
+
+      <form id="event-editor-form">
+        <input type="hidden" id="form-event-id" value="">
+        <div class="form-group">
+          <label class="form-label" for="form-title">Event Title *</label>
+          <input type="text" id="form-title" class="form-input" placeholder="e.g. Shri Sundarkand Mahotsav" required>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <div class="form-group">
+            <label class="form-label" for="form-date">Date *</label>
+            <input type="date" id="form-date" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="form-time">Start Time *</label>
+            <input type="time" id="form-time" class="form-input" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="form-venue">Venue Name *</label>
+          <input type="text" id="form-venue" class="form-input" placeholder="e.g. Hanuman Mandir Hall" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="form-address">Full Address / Landmark</label>
+          <input type="text" id="form-address" class="form-input" placeholder="e.g. 108 Ram Mandir Marg, Sector 5">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="form-notes">Notes (Dress code, samagri, guidelines)</label>
+          <textarea id="form-notes" class="form-textarea" placeholder="e.g. Please wear traditional yellow/saffron attire. Team gathers 30 mins prior for riyaz."></textarea>
+        </div>
+
+        <button type="submit" id="btn-save-event" class="btn btn-primary btn-block">
+          <span>Save Seva Event</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: PWA INSTALLATION GUIDE -->
+  <div id="modal-install-guide" class="modal-overlay">
+    <div class="modal-sheet">
+      <div class="modal-sheet-handle"></div>
+      <div class="modal-title-row">
+        <h2>Install App on Mobile</h2>
+        <button class="close-modal-btn" onclick="window.App.closeModals()">✕</button>
+      </div>
+
+      <div style="margin-bottom: 16px;">
+        <h4 style="color: var(--accent-maroon); margin-bottom: 6px;">📱 For iPhone / iPad (iOS 16.4+)</h4>
+        <ol style="padding-left: 20px; font-size: 0.88rem; color: var(--text-dark); line-height: 1.6;">
+          <li>Open this site in <strong>Safari</strong>.</li>
+          <li>Tap the <strong>Share</strong> button (box with upward arrow <span style="font-size: 1.1rem;">⎋</span>) at the bottom.</li>
+          <li>Scroll down and select <strong>"Add to Home Screen"</strong>.</li>
+          <li>Tap <strong>"Add"</strong> in the top right.</li>
+          <li><em style="color: var(--primary-dark);">Important:</em> Apple requires the app to be installed to your home screen before push notifications can be enabled!</li>
+        </ol>
+      </div>
+
+      <div style="margin-bottom: 18px;">
+        <h4 style="color: var(--accent-maroon); margin-bottom: 6px;">🤖 For Android Devices</h4>
+        <ol style="padding-left: 20px; font-size: 0.88rem; color: var(--text-dark); line-height: 1.6;">
+          <li>Open this site in <strong>Chrome</strong>.</li>
+          <li>Tap the three dots menu (<strong>⋮</strong>) in the top right.</li>
+          <li>Select <strong>"Install app"</strong> or <strong>"Add to Home screen"</strong>.</li>
+          <li>Follow the prompt to install.</li>
+        </ol>
+      </div>
+
+      <button class="btn btn-primary btn-block" onclick="window.App.closeModals()">
+        Got It
+      </button>
+    </div>
+  </div>
+
+  <!-- Load Vanilla ES Module Application -->
+  <script type="module" src="/static/app.js"></script>
+</body>
+</html>
